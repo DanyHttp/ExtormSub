@@ -25,7 +25,7 @@ Download `ExtormSub-Setup-<version>.exe` from the [latest release](https://githu
 
 1. **Launch ExtormSub.** It lives in the system tray. On first launch the settings window opens on **Speech Recognition**.
 2. **Download a speech model.** Pick the suggested one (150–600 MB). It is stored in `%LOCALAPPDATA%\ExtormSub\models`.
-3. **Add a translation API key** under **Translation**: any OpenAI-compatible provider works (OpenAI, DeepSeek, Claude, Gemini, OpenRouter, a local Ollama…). The key is stored DPAPI-encrypted on your PC.
+3. **(Optional) add a translation API key** under **Translation**. Without one, ExtormSub simply shows English subtitles; with one, any OpenAI-compatible provider works (OpenAI, DeepSeek, Claude, Gemini, OpenRouter, a local Ollama…). The key is stored DPAPI-encrypted on your PC.
 4. **Choose the audio source** under **Audio**: system audio (whatever you hear) or a microphone.
 5. **Play something and press `Ctrl+Alt+S`.** The English line appears as the speech is recognised, with the Persian translation under it, like in the screenshot above.
 6. Press `Ctrl+Alt+C` to unlock the overlay, drag or resize it where you want it, and press it again to make it click-through.

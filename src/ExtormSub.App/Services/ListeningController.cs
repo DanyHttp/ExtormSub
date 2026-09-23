@@ -295,11 +295,8 @@ public sealed class ListeningController : IAsyncDisposable
             Notify("Translation not configured", "Set the translation endpoint and model in Settings → Translation. Showing English only.", NoticeLevel.Warning);
             return null;
         }
-        if (preset.RequiresKey && string.IsNullOrWhiteSpace(key))
-        {
-            Notify("API key missing", $"Add your {s.Translation.Provider} API key in Settings → Translation. Showing English only.", NoticeLevel.Warning);
-            return null;
-        }
+        // No API key yet: translation stays off and subtitles are English only, without nagging.
+        if (preset.RequiresKey && string.IsNullOrWhiteSpace(key)) return null;
         var provider = new OpenAiCompatibleProvider(HttpFor(s.Translation.BaseUrl), new OpenAiCompatibleConfig
         {
             ProviderName = s.Translation.Provider,

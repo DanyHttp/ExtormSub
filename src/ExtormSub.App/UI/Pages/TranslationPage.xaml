@@ -6,7 +6,7 @@
         <TextBlock Text="PROVIDER" Style="{StaticResource T.Section}" />
         <Border Style="{StaticResource Card}">
             <StackPanel Margin="0,0,0,-1">
-                <ui:SettingRow Header="Translate subtitles" Description="When off, or when the API is unreachable, English subtitles keep working.">
+                <ui:SettingRow Header="Translate subtitles" Description="Stays off until you add an API key. Without one, or when the API is unreachable, English subtitles keep working.">
                     <CheckBox IsChecked="{Binding S.Translation.Enabled}" />
                 </ui:SettingRow>
                 <ui:SettingRow Header="Provider" Description="Any OpenAI-compatible endpoint. Choosing a provider fills in its endpoint and a sensible model.">
