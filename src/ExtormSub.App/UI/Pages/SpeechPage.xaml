@@ -1,0 +1,163 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.SpeechPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <TextBlock Text="ENGINE" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Engine" Description="whisper.cpp is built in. faster-whisper (CTranslate2) runs in a private Python environment and is often more accurate per model size on CPU.">
+                    <ComboBox Width="200" ItemsSource="{x:Static ui:SettingsViewModel.Engines}" SelectedItem="{Binding Engine}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Quality" Description="{Binding ResolvedText}">
+                    <ComboBox Width="200" ItemsSource="{x:Static ui:SettingsViewModel.PresetValues}" SelectedItem="{Binding Preset}"
+                              ItemTemplate="{StaticResource EnumItem}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Processor" Description="Automatic uses the GPU (CUDA with the NVIDIA pack, otherwise Vulkan) and falls back to the CPU.">
+                    <ComboBox Width="200" ItemsSource="{x:Static ui:SettingsViewModel.BackendValues}" SelectedItem="{Binding Backend}"
+                              ItemTemplate="{StaticResource EnumItem}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Spoken language" Description="English models are fastest. Use a multilingual model for other languages or “auto”.">
+                    <ComboBox Width="200" ItemsSource="{x:Static ui:SettingsViewModel.Languages}" SelectedItem="{Binding S.Asr.Language}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="CPU threads" Description="0 picks a good value for this processor.">
+                    <ui:ValueSlider Minimum="0" Maximum="16" TickFrequency="1" Value="{Binding S.Asr.Threads}" Format="{}{0:0}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Show English while speaking" Description="Live partial text appears instantly and refines as the sentence continues.">
+                    <CheckBox IsChecked="{Binding S.Asr.ShowPartials}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Visibility="{Binding IsFasterWhisper, Converter={StaticResource Visible}}">
+            <TextBlock Text="FASTER-WHISPER" Style="{StaticResource T.Section}" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel Margin="0,0,0,-1">
+                    <ui:SettingRow Header="Environment" Description="{Binding FasterWhisperStatus}">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Set up faster-whisper" Style="{StaticResource Button.Primary}" Command="{Binding SetupFasterWhisper}"
+                                    Visibility="{Binding FasterWhisperInstalled, Converter={StaticResource Collapsed}}" />
+                            <Button Content="Reinstall" Command="{Binding SetupFasterWhisper}"
+                                    Visibility="{Binding FasterWhisperInstalled, Converter={StaticResource Visible}}" />
+                            <Button Content="Cancel" Margin="8,0,0,0" Command="{Binding CancelSetup}"
+                                    Visibility="{Binding IsSettingUp, Converter={StaticResource Visible}}" />
+                            <Button Content="Remove" Margin="8,0,0,0" Style="{StaticResource Button.Danger}" Command="{Binding RemoveFasterWhisper}"
+                                    Visibility="{Binding FasterWhisperInstalled, Converter={StaticResource Visible}}" />
+                        </StackPanel>
+                    </ui:SettingRow>
+                    <ui:SettingRow Header="Python" Description="Python 3.9+ used to create the environment. Leave empty to find it automatically.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Width="240" Text="{Binding PythonPath, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Content="Browse…" Margin="8,0,0,0" Command="{Binding BrowsePython}" />
+                        </StackPanel>
+                    </ui:SettingRow>
+                    <Border BorderBrush="{StaticResource B.Border}" BorderThickness="0,0,0,1" Padding="18,12">
+                        <TextBlock Text="{Binding SetupLog}" Style="{StaticResource T.Value}" FontSize="11.5" TextWrapping="Wrap"
+                                   Foreground="{StaticResource B.TextMuted}" />
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SetupLog}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <TextBlock Text="NVIDIA ACCELERATION" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="CUDA pack for whisper.cpp" Description="{Binding CudaStatus}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Install" Style="{StaticResource Button.Primary}" Command="{Binding InstallCuda}"
+                                Visibility="{Binding CudaInstalled, Converter={StaticResource Collapsed}}" />
+                        <Button Content="Cancel" Margin="8,0,0,0" Command="{Binding CancelCuda}"
+                                Visibility="{Binding IsInstallingCuda, Converter={StaticResource Visible}}" />
+                        <Button Content="Remove" Style="{StaticResource Button.Danger}" Command="{Binding RemoveCuda}"
+                                Visibility="{Binding CudaInstalled, Converter={StaticResource Visible}}" />
+                    </StackPanel>
+                </ui:SettingRow>
+                <Border Padding="18,0,18,12" Visibility="{Binding IsInstallingCuda, Converter={StaticResource Visible}}">
+                    <ProgressBar Value="{Binding CudaProgress, Mode=OneWay}" Maximum="100" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="THIS PC" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Processor">
+                    <TextBlock Text="{Binding CpuText}" Foreground="{StaticResource B.TextMuted}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Graphics">
+                    <TextBlock Text="{Binding GpuText}" Foreground="{StaticResource B.TextMuted}" TextWrapping="Wrap" MaxWidth="360" TextAlignment="Right" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="GPU disabled after a crash" Visibility="{Binding GpuCrashed, Converter={StaticResource Visible}}"
+                               Description="Starting the GPU crashed ExtormSub last time, so the CPU is used. You can try the GPU again.">
+                    <Button Content="Try GPU again" Command="{Binding RetryGpu}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Visibility="{Binding IsFasterWhisper, Converter={StaticResource Collapsed}}">
+        <TextBlock Text="MODELS" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Model folder" Description="{Binding ModelDirectoryText}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Open" Command="{Binding OpenModelsFolder}" />
+                        <Button Content="Change…" Margin="8,0,0,0" Command="{Binding BrowseModelDirectory}" />
+                        <Button Content="Default" Margin="8,0,0,0" Style="{StaticResource Button.Ghost}" Command="{Binding ResetModelDirectory}" />
+                    </StackPanel>
+                </ui:SettingRow>
+                <ItemsControl ItemsSource="{Binding Models.Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{StaticResource B.Border}" BorderThickness="0,0,0,1" Padding="18,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontSize="13.5" />
+                                            <Border Style="{StaticResource Pill}" Margin="8,0,0,0" Background="{StaticResource B.AccentSoft}"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource Visible}}">
+                                                <TextBlock Text="In use" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Details}" Style="{StaticResource T.Caption}" Margin="0,3,0,0" />
+                                        <TextBlock Text="{Binding Status}" Style="{StaticResource T.Caption}" Foreground="{StaticResource B.TextSubtle}" Margin="0,2,0,0" />
+                                        <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,8,24,0"
+                                                     Visibility="{Binding ShowProgress, Converter={StaticResource Visible}}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="{Binding DownloadLabel}" Style="{StaticResource Button.Primary}"
+                                                Visibility="{Binding CanDownload, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.Download, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Content="Cancel" Visibility="{Binding IsDownloading, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.CancelDownload, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Content="Use" Margin="8,0,0,0"
+                                                Visibility="{Binding IsDownloaded, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.UseModel, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Content="Delete" Margin="8,0,0,0" Style="{StaticResource Button.Danger}"
+                                                Visibility="{Binding IsDownloaded, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.DeleteModel, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+        <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
+                   Text="Models come from huggingface.co/ggerganov/whisper.cpp (MIT) and are checked against pinned SHA-256 hashes. Interrupted downloads resume. “Use” switches the quality preset to Custom with that model." />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

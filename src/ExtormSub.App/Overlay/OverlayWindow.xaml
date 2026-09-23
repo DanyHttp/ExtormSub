@@ -1,0 +1,55 @@
+<Window x:Class="ExtormSub.App.Overlay.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:o="clr-namespace:ExtormSub.App.Overlay"
+        Title="ExtormSub Subtitles"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ShowActivated="False" Focusable="False"
+        ResizeMode="CanResize" MinWidth="300" MinHeight="80"
+        Width="1100" Height="200"
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
+    <WindowChrome.WindowChrome>
+        <WindowChrome x:Name="Chrome" CaptionHeight="0" ResizeBorderThickness="0" GlassFrameThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Grid>
+        <!-- Edit mode: visible, hit-testable frame. Hidden (and click-through) when locked. -->
+        <Border x:Name="EditFrame" Visibility="Collapsed" Background="#33000000" CornerRadius="10"
+                BorderBrush="#CC4C8DF6" BorderThickness="1.5" MouseLeftButtonDown="EditFrame_MouseLeftButtonDown">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0"
+                    Background="#F0141417" CornerRadius="8" Padding="12,6,6,6" BorderBrush="#33FFFFFF" BorderThickness="1">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Drag to move · drag edges to resize" Foreground="#E4E4E7" FontSize="12.5"
+                               FontFamily="Segoe UI" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <Button x:Name="LockButton" Click="LockButton_Click" Cursor="Hand" Focusable="False">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bg" Background="#4C8DF6" CornerRadius="5" Padding="10,4">
+                                    <TextBlock x:Name="Label" Text="Lock overlay" Foreground="White" FontSize="12" FontWeight="SemiBold" FontFamily="Segoe UI" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bg" Property="Background" Value="#6AA0F8" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <Border x:Name="Block" HorizontalAlignment="Center" VerticalAlignment="Bottom" CornerRadius="6"
+                Padding="18,6" Margin="10" IsHitTestVisible="False" Visibility="Hidden">
+            <StackPanel x:Name="TextStack">
+                <o:OutlinedText x:Name="OriginalLine" KeepTail="True" HorizontalAlignment="Center" />
+                <o:OutlinedText x:Name="TranslationLine" TextDirection="RightToLeft" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Small unobtrusive status dot, e.g. translation offline. -->
+        <Ellipse x:Name="StatusDot" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 Margin="0,0,14,14" Fill="#F59E0B" Visibility="Collapsed" IsHitTestVisible="False" />
+    </Grid>
+</Window>

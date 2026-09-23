@@ -1,0 +1,90 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.AdvancedPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <TextBlock Text="VOICE DETECTION" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Neural voice detection (Silero)" Description="Off uses a simple loudness detector, which also triggers on music.">
+                    <CheckBox IsChecked="{Binding S.Vad.UseSilero}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Speech threshold" Description="Higher ignores more background noise and music.">
+                    <ui:ValueSlider Minimum="0.1" Maximum="0.9" TickFrequency="0.05" Value="{Binding S.Vad.SpeechThreshold}" Format="{}{0:0.00}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Minimum speech" Description="Shorter sounds are ignored.">
+                    <ui:ValueSlider Minimum="64" Maximum="1000" TickFrequency="32" Value="{Binding S.Vad.MinSpeechMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Silence timeout" Description="Pause that ends a subtitle. Lower = faster subtitles, more fragments.">
+                    <ui:ValueSlider Minimum="150" Maximum="2000" TickFrequency="50" Value="{Binding S.Vad.SilenceTimeoutMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Pre-roll" Description="Audio kept from before speech starts, so first words are not clipped.">
+                    <ui:ValueSlider Minimum="0" Maximum="1000" TickFrequency="50" Value="{Binding S.Vad.PreRollMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Post-roll" Description="Audio kept after speech ends.">
+                    <ui:ValueSlider Minimum="0" Maximum="1000" TickFrequency="50" Value="{Binding S.Vad.PostRollMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Longest subtitle" Description="Continuous speech is split after this long.">
+                    <ui:ValueSlider Minimum="3" Maximum="28" TickFrequency="1" Value="{Binding S.Vad.MaxUtteranceSeconds}" Format="{}{0:0} s" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="REAL-TIME BEHAVIOUR" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Live update interval" Description="How often the English line refreshes while someone speaks.">
+                    <ui:ValueSlider Minimum="300" Maximum="3000" TickFrequency="50" Value="{Binding S.Asr.PartialIntervalMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Stability delay" Description="Text unchanged this long is translated before the sentence ends.">
+                    <ui:ValueSlider Minimum="100" Maximum="2000" TickFrequency="50" Value="{Binding S.Asr.StabilityDebounceMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Speed up short clips" Description="Trims whisper's audio window. Faster on CPU, slightly less accurate.">
+                    <CheckBox IsChecked="{Binding S.Asr.TrimAudioContext}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="No-speech filter" Description="Drops text whisper itself thinks is not speech (hallucinations on music).">
+                    <ui:ValueSlider Minimum="0.3" Maximum="0.95" TickFrequency="0.05" Value="{Binding S.Advanced.NoSpeechThreshold}" Format="{}{0:0.00}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="PIPELINE" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Queue speech on disk when behind" Description="If recognition cannot keep up, extra speech waits on disk instead of being skipped, so history stays complete.">
+                    <CheckBox IsChecked="{Binding S.Advanced.SpoolToDisk}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="In-memory backlog" Description="Speech waiting for recognition kept in memory before it goes to disk (or is skipped).">
+                    <ui:ValueSlider Minimum="5" Maximum="120" TickFrequency="5" Value="{Binding S.Advanced.MaxAsrBacklogSeconds}" Format="{}{0:0} s" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Disk queue limit" Description="Beyond this the oldest queued speech is skipped. Written only while recognition is behind.">
+                    <ui:ValueSlider Minimum="1" Maximum="240" TickFrequency="1" Value="{Binding S.Advanced.MaxSpoolMinutes}" Format="{}{0:0} min" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Late subtitles" Description="Speech recognised later than this after it was said is saved to history but not shown on screen.">
+                    <ui:ValueSlider Minimum="2" Maximum="60" TickFrequency="1" Value="{Binding S.Advanced.StaleAfterSeconds}" Format="{}{0:0} s" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Order timeout" Description="A slow translation may hold newer subtitles back this long before it is skipped.">
+                    <ui:ValueSlider Minimum="1000" Maximum="15000" TickFrequency="500" Value="{Binding S.Advanced.SequencerHeadTimeoutMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Translation cache" Description="Takes effect after restarting ExtormSub.">
+                    <ui:ValueSlider Minimum="100" Maximum="20000" TickFrequency="100" Value="{Binding S.Advanced.TranslationCacheSize}" Format="{}{0:0} lines" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="LOGS &amp; DATA" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Log level" Description="Logs never contain API keys.">
+                    <ComboBox Width="160" ItemsSource="{x:Static ui:SettingsViewModel.LogLevels}" SelectedItem="{Binding S.Advanced.LogLevel}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Folders" Description="{Binding DataPaths}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Logs" Command="{Binding OpenLogs}" />
+                        <Button Content="Settings" Margin="8,0,0,0" Command="{Binding OpenData}" />
+                    </StackPanel>
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

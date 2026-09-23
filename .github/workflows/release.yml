@@ -1,0 +1,59 @@
+name: Release
+
+# Push a tag like v0.2.0 to build the installer, sign it with SignPath and publish a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+
+      - name: Build installer (runs tests)
+        shell: pwsh
+        run: ./build/build-installer.ps1 -Version ("${{ github.ref_name }}".TrimStart('v'))
+
+      - name: Upload unsigned installer
+        id: unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-unsigned
+          path: artifacts/ExtormSub-Setup-*.exe
+
+      # Set the SIGNPATH_ORGANIZATION_ID repository variable and the SIGNPATH_API_TOKEN secret once
+      # the SignPath Foundation application is approved. Until then the release ships unsigned.
+      - name: Sign with SignPath
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ExtormSub
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: artifacts/signed
+
+      # The update manifest holds the installer's SHA-256, so rebuild it from the signed file.
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $setup = Get-ChildItem artifacts/signed/ExtormSub-Setup-*.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $setup) { $setup = Get-ChildItem artifacts/ExtormSub-Setup-*.exe | Select-Object -First 1 }
+          $manifest = [ordered]@{
+              version = "${{ github.ref_name }}".TrimStart('v')
+              url     = $setup.Name
+              sha256  = (Get-FileHash $setup.FullName -Algorithm SHA256).Hash
+              size    = $setup.Length
+          } | ConvertTo-Json
+          [IO.File]::WriteAllText("$PWD/latest.json", $manifest)
+          gh release create "${{ github.ref_name }}" $setup.FullName latest.json --title "ExtormSub ${{ github.ref_name }}" --generate-notes

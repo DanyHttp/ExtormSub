@@ -1,0 +1,21 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.HistoryPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <TextBlock Text="TRANSCRIPTS" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Save subtitle history" Description="Stored only on this PC, in a local SQLite database.">
+                    <CheckBox IsChecked="{Binding S.History.Enabled}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Transcript history" Description="Search past sessions, copy lines and export TXT, SRT or VTT.">
+                    <Button Content="Open history" Style="{StaticResource Button.Primary}" Command="{Binding OpenHistory}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Clear history" Description="Permanently deletes every saved session.">
+                    <Button Content="Clear all…" Style="{StaticResource Button.Danger}" Command="{Binding ClearHistory}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

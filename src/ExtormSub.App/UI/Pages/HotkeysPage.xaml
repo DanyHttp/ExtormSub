@@ -1,0 +1,61 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.HotkeysPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <UserControl.Resources>
+        <Style x:Key="Err" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FCA5A5" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Margin" Value="0,5,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Trigger>
+                <Trigger Property="Text" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <StackPanel>
+        <TextBlock Text="SHORTCUTS" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Start / stop subtitles">
+                    <StackPanel>
+                        <ui:HotkeyBox Text="{Binding S.Hotkeys.ToggleListening, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource Err}" Text="{Binding ToggleListeningError}" />
+                    </StackPanel>
+                </ui:SettingRow>
+                <ui:SettingRow Header="Lock / unlock overlay" Description="Unlocked, the overlay can be dragged and resized; locked, clicks pass through it.">
+                    <StackPanel>
+                        <ui:HotkeyBox Text="{Binding S.Hotkeys.ToggleLock, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource Err}" Text="{Binding ToggleLockError}" />
+                    </StackPanel>
+                </ui:SettingRow>
+                <ui:SettingRow Header="Show / hide subtitles">
+                    <StackPanel>
+                        <ui:HotkeyBox Text="{Binding S.Hotkeys.ToggleVisibility, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource Err}" Text="{Binding ToggleVisibilityError}" />
+                    </StackPanel>
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="EMERGENCY" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Restore overlay control"
+                               Description="Always works: shows the overlay, makes it interactive and brings it back on screen. It cannot be removed.">
+                    <StackPanel>
+                        <ui:HotkeyBox Text="{Binding S.Hotkeys.EmergencyUnlock, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource Err}" Text="{Binding EmergencyError}" />
+                    </StackPanel>
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+        <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
+                   Text="Click a box and press a combination with Ctrl, Alt, Shift or Win. Backspace clears it. The tray menu can always unlock the overlay too." />
+    </StackPanel>
+</UserControl>

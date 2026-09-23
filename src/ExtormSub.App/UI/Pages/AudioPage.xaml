@@ -1,0 +1,33 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.AudioPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <TextBlock Text="SOURCE" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Listen to" Description="System audio captures everything your PC plays (WASAPI loopback). Microphone subtitles what you or the room says.">
+                    <ComboBox Width="200" ItemsSource="{x:Static ui:SettingsViewModel.SourceKinds}" SelectedItem="{Binding AudioSource}"
+                              ItemTemplate="{StaticResource EnumItem}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="{Binding DeviceLabel}" Description="{Binding CurrentDevice}">
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox Width="300" ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" DisplayMemberPath="Name" />
+                        <Button Content="Refresh" Margin="8,0,0,0" Command="{Binding RefreshDevices}" />
+                    </StackPanel>
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+        <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
+                   Text="If the selected device is unplugged, ExtormSub switches to the Windows default and tells you. Following the Windows default also follows your changes to it. Microphone access must be allowed in Windows privacy settings." />
+
+        <TextBlock Text="BUFFERING" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Capture buffer" Description="Audio held between capture and processing. Capture never waits for recognition or translation.">
+                    <ui:ValueSlider Minimum="2" Maximum="60" TickFrequency="1" Value="{Binding S.Audio.RingBufferSeconds}" Format="{}{0:0} s" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

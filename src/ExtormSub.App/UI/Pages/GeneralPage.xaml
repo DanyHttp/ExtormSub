@@ -1,0 +1,39 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.GeneralPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <TextBlock Text="STARTUP" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Start with Windows" Description="Launch ExtormSub quietly in the tray when you sign in.">
+                    <CheckBox IsChecked="{Binding S.General.StartWithWindows}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Start minimized" Description="Open straight to the tray instead of showing this window.">
+                    <CheckBox IsChecked="{Binding S.General.StartMinimized}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Start listening on launch" Description="Begin subtitling as soon as ExtormSub starts.">
+                    <CheckBox IsChecked="{Binding S.General.StartListeningOnLaunch}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="BEHAVIOUR" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Minimize to tray" Description="Minimizing this window hides it to the tray. Closing it never quits ExtormSub.">
+                    <CheckBox IsChecked="{Binding S.General.MinimizeToTray}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Remember overlay position" Description="Keep the place you dragged the subtitles to.">
+                    <CheckBox IsChecked="{Binding S.General.RememberOverlayPosition}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Remember monitor" Description="Reopen the overlay on the same display.">
+                    <CheckBox IsChecked="{Binding S.General.RememberMonitor}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Hide subtitles when audio is silent" Description="Fade out after the subtitle duration when nobody is speaking.">
+                    <CheckBox IsChecked="{Binding S.General.PauseWhenSilent}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

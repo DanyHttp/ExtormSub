@@ -1,0 +1,107 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.AppearancePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <TextBlock Text="LAYOUT" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Show" Description="The translation is the main line; English is shown smaller above it.">
+                    <ComboBox Width="220" ItemsSource="{x:Static ui:SettingsViewModel.DisplayModes}" SelectedItem="{Binding S.Overlay.DisplayMode}"
+                              ItemTemplate="{StaticResource EnumItem}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Position" Description="Or unlock the overlay and drag it anywhere (Custom).">
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox Width="170" ItemsSource="{x:Static ui:SettingsViewModel.Positions}" SelectedItem="{Binding Position}"
+                                  ItemTemplate="{StaticResource EnumItem}" />
+                        <Button Content="Move overlay…" Margin="8,0,0,0" Command="{Binding EditOverlay}" />
+                    </StackPanel>
+                </ui:SettingRow>
+                <ui:SettingRow Header="Maximum width">
+                    <ui:ValueSlider Minimum="400" Maximum="2400" TickFrequency="20" Value="{Binding S.Overlay.MaxWidth}" Format="{}{0:0} px" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Maximum lines" Description="Longer translations shrink slightly first, then are shortened.">
+                    <ui:ValueSlider Minimum="1" Maximum="4" TickFrequency="1" Value="{Binding S.Overlay.MaxLines}" Format="{}{0:0}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Distance from screen edge">
+                    <ui:ValueSlider Minimum="0" Maximum="400" TickFrequency="4" Value="{Binding S.Overlay.BottomMargin}" Format="{}{0:0} px" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Line spacing">
+                    <ui:ValueSlider Minimum="0.9" Maximum="2" TickFrequency="0.05" Value="{Binding S.Overlay.LineSpacing}" Format="{}{0:0.00}×" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="TRANSLATION TEXT" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Font" Description="Needs Persian glyphs: Segoe UI, Tahoma or Vazirmatn work well.">
+                    <ComboBox Width="240" ItemsSource="{x:Static ui:SettingsViewModel.Fonts}" SelectedItem="{Binding S.Overlay.TranslationFont}" MaxDropDownHeight="360" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Size">
+                    <ui:ValueSlider Minimum="14" Maximum="80" TickFrequency="1" Value="{Binding S.Overlay.TranslationFontSize}" Format="{}{0:0} px" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Weight">
+                    <ComboBox Width="160" ItemsSource="{x:Static ui:SettingsViewModel.Weights}" SelectedItem="{Binding S.Overlay.FontWeight}" ItemTemplate="{StaticResource EnumItem}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Colour">
+                    <ui:ColorBox Text="{Binding S.Overlay.TranslationColor, UpdateSourceTrigger=PropertyChanged}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="ENGLISH TEXT" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Font">
+                    <ComboBox Width="240" ItemsSource="{x:Static ui:SettingsViewModel.Fonts}" SelectedItem="{Binding S.Overlay.OriginalFont}" MaxDropDownHeight="360" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Size">
+                    <ui:ValueSlider Minimum="10" Maximum="60" TickFrequency="1" Value="{Binding S.Overlay.OriginalFontSize}" Format="{}{0:0} px" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Colour">
+                    <ui:ColorBox Text="{Binding S.Overlay.OriginalColor, UpdateSourceTrigger=PropertyChanged}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="STYLE" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Text opacity">
+                    <ui:ValueSlider Minimum="0.1" Maximum="1" TickFrequency="0.05" Value="{Binding S.Overlay.TextOpacity}" Format="{}{0:P0}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Background colour">
+                    <ui:ColorBox Text="{Binding S.Overlay.BackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Background opacity" Description="0 % shows text only.">
+                    <ui:ValueSlider Minimum="0" Maximum="1" TickFrequency="0.05" Value="{Binding S.Overlay.BackgroundOpacity}" Format="{}{0:P0}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Outline" Description="Keeps text readable on bright scenes.">
+                    <CheckBox IsChecked="{Binding S.Overlay.Outline}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Outline colour">
+                    <ui:ColorBox Text="{Binding S.Overlay.OutlineColor, UpdateSourceTrigger=PropertyChanged}" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Outline thickness">
+                    <ui:ValueSlider Minimum="0.5" Maximum="6" TickFrequency="0.5" Value="{Binding S.Overlay.OutlineThickness}" Format="{}{0:0.0} px" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Shadow">
+                    <CheckBox IsChecked="{Binding S.Overlay.Shadow}" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="TIMING" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Subtitle duration" Description="How long a line stays after speech stops.">
+                    <ui:ValueSlider Minimum="1" Maximum="30" TickFrequency="0.5" Value="{Binding S.Overlay.SubtitleDurationSeconds}" Format="{}{0:0.0} s" />
+                </ui:SettingRow>
+                <ui:SettingRow Header="Fade">
+                    <ui:ValueSlider Minimum="0" Maximum="1500" TickFrequency="50" Value="{Binding S.Overlay.FadeDurationMs}" Format="{}{0:0} ms" />
+                </ui:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

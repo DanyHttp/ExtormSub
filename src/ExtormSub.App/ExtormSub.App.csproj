@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>ExtormSub</AssemblyName>
+    <RootNamespace>ExtormSub.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\ExtormSub.ico</ApplicationIcon>
+    <!-- WinForms is only used for NotifyIcon/Screen; keep WPF types unambiguous. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- WPF needs PerMonitorV2 in the manifest; the WinForms analyzer prefers an API call. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <!-- Where the app looks for updates: the URL of latest.json, which build\build-installer.ps1 writes next to the installer.
+         Empty = update checks off. -->
+    <UpdateManifestUrl Condition="'$(UpdateManifestUrl)' == ''">https://github.com/DanyHttp/ExtormSub/releases/latest/download/latest.json</UpdateManifestUrl>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(UpdateManifestUrl)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>UpdateManifestUrl</_Parameter1>
+      <_Parameter2>$(UpdateManifestUrl)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Net.Http" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExtormSub.Core\ExtormSub.Core.csproj" />
+    <ProjectReference Include="..\ExtormSub.Infrastructure\ExtormSub.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\ExtormSub.ico;Assets\Logo.png;Assets\Mark.png" />
+    <None Include="..\..\assets\silero_vad.onnx" Link="assets\silero_vad.onnx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

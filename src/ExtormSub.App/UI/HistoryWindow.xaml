@@ -1,0 +1,85 @@
+<Window x:Class="ExtormSub.App.UI.HistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:ExtormSub.App.UI"
+        Title="ExtormSub History" Width="1060" Height="700" MinWidth="780" MinHeight="460"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource B.Window}" Foreground="{StaticResource B.Text}"
+        FontFamily="{StaticResource F.Ui}" FontSize="13" UseLayoutRounding="True">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="310" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sessions -->
+        <Border Background="{StaticResource B.Sidebar}" BorderBrush="{StaticResource B.Border}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="14,18,14,14">
+                <TextBlock DockPanel.Dock="Top" Text="Sessions" FontSize="15" FontWeight="SemiBold" Margin="6,0,0,12" />
+                <TextBox DockPanel.Dock="Top" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=300}" Margin="0,0,0,10"
+                         ToolTip="Search English and translated text" />
+                <Button DockPanel.Dock="Bottom" Content="Clear all history…" Style="{StaticResource Button.Danger}" Margin="0,10,0,0"
+                        Command="{Binding ClearAll}" />
+                <Grid>
+                    <ListBox Style="{StaticResource PlainList}" ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding CountText}" Foreground="{StaticResource B.TextSubtle}" FontSize="12" />
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                    </DockPanel>
+                                    <TextBlock Text="{Binding Preview}" Foreground="{StaticResource B.TextMuted}" FontSize="12" Margin="0,3,0,0"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Text="{Binding EmptyText}" Style="{StaticResource T.Caption}" TextAlignment="Center" VerticalAlignment="Center" Margin="20" />
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <!-- Segments -->
+        <DockPanel Grid.Column="1" Margin="28,22,28,22">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ComboBox Width="170" ItemsSource="{x:Static ui:HistoryViewModel.ContentOptions}" SelectedItem="{Binding ExportContent}"
+                              ItemTemplate="{StaticResource EnumItem}" ToolTip="What to include when copying or exporting" />
+                    <Button Content="Copy" Margin="8,0,0,0" Command="{Binding Copy}" />
+                    <Button Content="TXT" Margin="8,0,0,0" Command="{Binding Export}" CommandParameter="txt" />
+                    <Button Content="SRT" Margin="6,0,0,0" Command="{Binding Export}" CommandParameter="srt" />
+                    <Button Content="VTT" Margin="6,0,0,0" Command="{Binding Export}" CommandParameter="vtt" />
+                    <Button Content="Delete" Margin="8,0,0,0" Style="{StaticResource Button.Danger}" Command="{Binding DeleteSession}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding Header}" Style="{StaticResource T.PageTitle}" FontSize="19" />
+                    <TextBlock Text="{Binding SubHeader}" Style="{StaticResource T.Caption}" Margin="0,3,0,0" />
+                </StackPanel>
+            </DockPanel>
+
+            <Border Style="{StaticResource Card}">
+                <ListBox x:Name="SegmentList" Style="{StaticResource PlainList}" ItemsSource="{Binding Segments}" SelectionMode="Extended"
+                         Margin="6" VirtualizingPanel.IsVirtualizing="True" ScrollViewer.CanContentScroll="True">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Time}" Style="{StaticResource T.Value}" FontSize="12" Foreground="{StaticResource B.TextSubtle}" Margin="0,2,0,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding Original}" TextWrapping="Wrap" Foreground="{StaticResource B.TextMuted}" />
+                                    <TextBlock Text="{Binding Translation}" TextWrapping="Wrap" FlowDirection="RightToLeft" TextAlignment="Left"
+                                               FontSize="15" Margin="0,4,0,0" Visibility="{Binding HasTranslation, Converter={StaticResource Visible}}" />
+                                    <TextBlock Text="{Binding Meta}" FontSize="11" Foreground="{StaticResource B.TextSubtle}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </DockPanel>
+    </Grid>
+</Window>
