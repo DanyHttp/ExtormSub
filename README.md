@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/DanyHttp/ExtormSub/releases/latest"><img src="https://img.shields.io/github/downloads/DanyHttp/ExtormSub/total?label=downloads" alt="GitHub downloads"></a>
+</p>
+
+<p align="center">
   <img src="docs/images/subtitles-demo.png" alt="ExtormSub showing English speech with a Persian translation over a video" width="700">
 </p>
 
@@ -80,12 +84,9 @@ tests/ExtormSub.Tests         127 xUnit tests (incl. real Silero, whisper.cpp an
 
 Design: [ARCHITECTURE.md](ARCHITECTURE.md) · Plan: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) · Decisions: [docs/architecture.md](docs/architecture.md) · Status: [docs/progress.md](docs/progress.md)
 
-## Code signing policy
+## Build & privacy
 
-Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
-
-- Release installers are built from this repository by the [release workflow](.github/workflows/release.yml) on GitHub-hosted runners, then signed.
-- **Approver:** [@DanyHttp](https://github.com/DanyHttp), the only committer and maintainer, approves every signing request.
+- Release installers are built from this repository by the [release workflow](.github/workflows/release.yml) on GitHub-hosted runners.
 - **Privacy:** ExtormSub never uploads audio. Speech recognition runs on your PC. Only the recognised English text is sent to the translation provider *you* configure. The update check contacts GitHub and sends nothing about you.
 
 ## License
