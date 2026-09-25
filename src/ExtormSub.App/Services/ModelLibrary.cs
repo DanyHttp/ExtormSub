@@ -10,7 +10,7 @@ namespace ExtormSub.App.Services;
 
 public sealed class ModelItemViewModel(WhisperModel model) : ObservableObject
 {
-    private bool _isDownloaded, _isDownloading, _isActive;
+    private bool _isDownloaded, _isDownloading, _isActive, _isRecommended;
     private double _progress;
     private string _status = "";
 
@@ -28,6 +28,7 @@ public sealed class ModelItemViewModel(WhisperModel model) : ObservableObject
     public string DownloadLabel => PartialBytes > 0 ? "Resume" : "Download";
     public long PartialBytes { get; set; }
     public bool IsActive { get => _isActive; set => Set(ref _isActive, value); }
+    public bool IsRecommended { get => _isRecommended; set => Set(ref _isRecommended, value); }
     public double Progress { get => _progress; set => Set(ref _progress, value); }
     public void NotifyDownloadLabel()
     {
@@ -69,9 +70,13 @@ public sealed class ModelLibrary
     public void Refresh()
     {
         var active = _controller.Resolve(_settings.Current).ModelId;
+        // What the Balanced preset picks here: the best speed/accuracy trade-off for this hardware.
+        var gpu = ModelCatalog.ResolveBackend(AsrBackend.Auto, _controller.Hardware, _controller.Asr.GpuCrashedLastRun) == AsrBackend.Gpu;
+        var recommended = ModelCatalog.ModelForPreset(AsrPreset.Balanced, gpu, "");
         foreach (var item in Items)
         {
             item.IsActive = item.Id == active;
+            item.IsRecommended = item.Id == recommended;
             if (item.IsDownloading) continue;
             item.IsDownloaded = ModelDownloader.IsDownloaded(Directory, item.Model);
             item.PartialBytes = item.IsDownloaded ? 0 : ModelDownloader.PartialBytes(Directory, item.Model);

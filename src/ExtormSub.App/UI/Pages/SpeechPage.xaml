@@ -130,8 +130,13 @@
                                                     Visibility="{Binding IsActive, Converter={StaticResource Visible}}">
                                                 <TextBlock Text="In use" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
                                             </Border>
+                                            <Border Style="{StaticResource Pill}" Margin="8,0,0,0" Background="{StaticResource B.AccentSoft}"
+                                                    Visibility="{Binding IsRecommended, Converter={StaticResource Visible}}">
+                                                <TextBlock Text="Recommended for this PC" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
+                                            </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Details}" Style="{StaticResource T.Caption}" Margin="0,3,0,0" />
+                                        <TextBlock Text="{Binding Model.Guide}" Style="{StaticResource T.Caption}" TextWrapping="Wrap" Margin="0,3,24,0" />
                                         <TextBlock Text="{Binding Status}" Style="{StaticResource T.Caption}" Foreground="{StaticResource B.TextSubtle}" Margin="0,2,0,0" />
                                         <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,8,24,0"
                                                      Visibility="{Binding ShowProgress, Converter={StaticResource Visible}}" />
@@ -157,7 +162,7 @@
             </StackPanel>
         </Border>
         <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
-                   Text="Models come from huggingface.co/ggerganov/whisper.cpp (MIT) and are checked against pinned SHA-256 hashes. Interrupted downloads resume. “Use” switches the quality preset to Custom with that model." />
+                   Text="Not sure? Take the one marked Recommended for this PC. Bigger models hear more accurately but need a faster PC; if subtitles lag behind the speech, pick a smaller one. Quantized models are smaller and faster with almost the same accuracy. Models come from huggingface.co/ggerganov/whisper.cpp (MIT) and are checked against pinned SHA-256 hashes. Interrupted downloads resume. “Use” switches the quality preset to Custom with that model." />
         </StackPanel>
     </StackPanel>
 </UserControl>
