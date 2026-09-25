@@ -40,6 +40,10 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
     private IReadOnlyDictionary<HotkeyAction, string> _hotkeyErrors = new Dictionary<HotkeyAction, string>();
     private readonly CudaRuntimePack _cuda;
     private readonly FasterWhisperEnvironment _fw;
+    private readonly ExtormSub.Infrastructure.Translation.LibreTranslateServer _libre;
+    private readonly Queue<string> _libreLog = new();
+    private CancellationTokenSource? _libreCts;
+    private bool _libreBusy;
     private readonly Queue<string> _setupLog = new();
     private CancellationTokenSource? _setupCts, _cudaCts;
     private bool _settingUp, _installingCuda;
@@ -51,6 +55,7 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
     {
         _cuda = cuda;
         _fw = controller.FasterWhisperEnvironment;
+        _libre = controller.LibreTranslate;
         _store = store;
         _secrets = secrets;
         _controller = controller;
@@ -96,6 +101,15 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
         SetupFasterWhisper = new RelayCommand(async () => await SetupFasterWhisperAsync(), _ => !_settingUp);
         CancelSetup = new RelayCommand(() => _setupCts?.Cancel(), _ => _settingUp);
         RemoveFasterWhisper = new RelayCommand(RemoveFasterWhisperEnv, _ => !_settingUp && _fw.IsInstalled);
+        InstallLibre = new RelayCommand(async () => await InstallLibreAsync(), _ => !_libreBusy);
+        CancelLibre = new RelayCommand(() => _libreCts?.Cancel(), _ => _libreBusy);
+        RemoveLibre = new RelayCommand(() =>
+        {
+            if (!Confirm("Remove LibreTranslate and its downloaded language models?")) return;
+            try { _libre.Remove(); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { MessageBox.Show(ex.Message, "ExtormSub"); }
+            RaiseLibre();
+        }, _ => !_libreBusy && _libre.IsInstalled);
         BrowsePython = new RelayCommand(() =>
         {
             var d = new Microsoft.Win32.OpenFileDialog { Title = "Choose python.exe", Filter = "Python|python.exe" };
@@ -356,6 +370,54 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
             Raise(nameof(Model));
             Raise(nameof(HasApiKey));
             Raise(nameof(ApiKeyHint));
+            Raise(nameof(IsLibreTranslate));
+        }
+    }
+
+    // ─── LibreTranslate (self-hosted) ───
+    public bool IsLibreTranslate => ProviderPresets.IsLibreTranslate(S.Translation.Provider);
+    public bool LibreInstalled => _libre.IsInstalled;
+    public bool IsInstallingLibre { get => _libreBusy; private set { if (Set(ref _libreBusy, value)) CommandManager.InvalidateRequerySuggested(); } }
+    public string LibreStatus => _libre.IsInstalled
+        ? $"Installed ({_libre.Root}). Starts automatically with listening or Test connection; the first start downloads the language models."
+        : "Not installed. Downloads about 1 GB of Python packages into a private folder; your own Python stays untouched. Needs Python 3.9+.";
+    public string LibreLog { get { lock (_libreLog) return string.Join("\n", _libreLog); } }
+
+    private void RaiseLibre()
+    {
+        Raise(nameof(LibreInstalled));
+        Raise(nameof(LibreStatus));
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private async Task InstallLibreAsync()
+    {
+        IsInstallingLibre = true;
+        lock (_libreLog) _libreLog.Clear();
+        _libreCts = new CancellationTokenSource();
+        IProgress<string> progress = new Progress<string>(line =>
+        {
+            lock (_libreLog)
+            {
+                _libreLog.Enqueue(line);
+                while (_libreLog.Count > 12) _libreLog.Dequeue();
+            }
+            Raise(nameof(LibreLog));
+        });
+        try
+        {
+            await _libre.SetupAsync(S.Asr.PythonPath, progress, _libreCts.Token);
+            if (!Uri.TryCreate(S.Translation.BaseUrl, UriKind.Absolute, out var url) || !url.IsLoopback) BaseUrl = "http://localhost:5000";
+            progress.Report("✓ LibreTranslate is installed. Press Test connection to start it.");
+        }
+        catch (OperationCanceledException) { progress.Report("Setup cancelled."); }
+        catch (Exception ex) { progress.Report("✗ " + ex.Message); }
+        finally
+        {
+            _libreCts.Dispose();
+            _libreCts = null;
+            IsInstallingLibre = false;
+            RaiseLibre();
         }
     }
 
@@ -436,6 +498,9 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
     public ICommand OpenData { get; }
     public ICommand OpenUrl { get; }
     public ICommand SetupFasterWhisper { get; }
+    public ICommand InstallLibre { get; }
+    public ICommand CancelLibre { get; }
+    public ICommand RemoveLibre { get; }
     public ICommand CancelSetup { get; }
     public ICommand RemoveFasterWhisper { get; }
     public ICommand BrowsePython { get; }

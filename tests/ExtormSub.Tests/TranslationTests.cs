@@ -317,3 +317,64 @@ public class OpenAiCompatibleProviderTests
         }
     }
 }
+
+public class LibreTranslateProviderTests
+{
+    private sealed class StubHandler(HttpStatusCode code, string json) : HttpMessageHandler
+    {
+        public List<(HttpRequestMessage Request, string Body)> Seen { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Seen.Add((request, await request.Content!.ReadAsStringAsync(ct)));
+            return new(code) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
+        }
+    }
+
+    [Fact]
+    public async Task Posts_language_codes_and_parses_translatedText()
+    {
+        var handler = new StubHandler(HttpStatusCode.OK, """{"translatedText":" سلام "}""");
+        var p = new LibreTranslateProvider(new HttpClient(handler), "http://localhost:5000/", TimeSpan.FromSeconds(5), "key1");
+
+        Assert.Equal("سلام", await p.TranslateAsync(new("Hello", [], [], "English", "Persian"), CancellationToken.None));
+        var (request, body) = handler.Seen.Single();
+        Assert.Equal("http://localhost:5000/translate", request.RequestUri!.ToString());
+        var json = JsonNode.Parse(body)!;
+        Assert.Equal("Hello", (string)json["q"]!);
+        Assert.Equal("en", (string)json["source"]!);
+        Assert.Equal("fa", (string)json["target"]!);
+        Assert.Equal("key1", (string)json["api_key"]!);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Forbidden, TranslationErrorKind.Auth)]
+    [InlineData(HttpStatusCode.TooManyRequests, TranslationErrorKind.RateLimited)]
+    [InlineData(HttpStatusCode.BadRequest, TranslationErrorKind.Fatal)]
+    public async Task Maps_http_errors(HttpStatusCode code, TranslationErrorKind kind)
+    {
+        var p = new LibreTranslateProvider(new HttpClient(new StubHandler(code, """{"error":"x"}""")), "http://x", TimeSpan.FromSeconds(5), null);
+        var ex = await Assert.ThrowsAsync<TranslationException>(() => p.TranslateAsync(new("Hi", [], [], "en", "fa"), CancellationToken.None));
+        Assert.Equal(kind, ex.Kind);
+    }
+
+    [Theory]
+    [InlineData("English", "en")]
+    [InlineData("persian", "fa")]
+    [InlineData("zh-Hans", "zh-Hans")]
+    [InlineData("auto", "auto")]
+    [InlineData("Klingonese", null)]
+    public void Maps_language_names_to_codes(string name, string? code) =>
+        Assert.Equal(code, LibreTranslateProvider.LanguageCode(name));
+
+    /// <summary>Real server check. Set LIBRETRANSLATE_URL (e.g. http://localhost:5000) to run it.</summary>
+    [Fact]
+    public async Task Live_server_translates_when_configured()
+    {
+        var url = Environment.GetEnvironmentVariable("LIBRETRANSLATE_URL");
+        if (string.IsNullOrEmpty(url)) return;
+        var p = new LibreTranslateProvider(new HttpClient(), url, TimeSpan.FromSeconds(60), null);
+        var result = await p.TranslateAsync(new("Good morning, my friend.", [], [], "English", "Persian"), CancellationToken.None);
+        Assert.Matches(@"\p{IsArabic}", result);
+    }
+}

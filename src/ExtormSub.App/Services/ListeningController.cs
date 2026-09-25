@@ -10,6 +10,7 @@ using ExtormSub.Infrastructure;
 using ExtormSub.Infrastructure.ASR;
 using ExtormSub.Infrastructure.Audio;
 using ExtormSub.Infrastructure.Security;
+using ExtormSub.Infrastructure.Translation;
 using ExtormSub.Infrastructure.Vad;
 using Microsoft.Extensions.Logging;
 
@@ -35,6 +36,7 @@ public sealed class ListeningController : IAsyncDisposable
     private readonly WhisperCppProvider _asr;
     private readonly FasterWhisperProvider _fasterWhisper;
     private readonly FasterWhisperEnvironment _fasterWhisperEnv;
+    private readonly LibreTranslateServer _libre;
     private readonly AudioDeviceService _devices;
     private readonly SubtitlePipeline _pipeline;
     private readonly HistoryRecorder _history;
@@ -53,7 +55,7 @@ public sealed class ListeningController : IAsyncDisposable
 
     public ListeningController(
         SettingsStore settings, ISecretStore secrets, AppPaths paths, WhisperCppProvider asr,
-        FasterWhisperProvider fasterWhisper, FasterWhisperEnvironment fasterWhisperEnv, AudioDeviceService devices,
+        FasterWhisperProvider fasterWhisper, FasterWhisperEnvironment fasterWhisperEnv, LibreTranslateServer libre, AudioDeviceService devices,
         HistoryRecorder history, PipelineMetrics metrics, HttpClient http, ILoggerFactory loggers)
     {
         _settings = settings;
@@ -62,6 +64,7 @@ public sealed class ListeningController : IAsyncDisposable
         _asr = asr;
         _fasterWhisper = fasterWhisper;
         _fasterWhisperEnv = fasterWhisperEnv;
+        _libre = libre;
         _devices = devices;
         _history = history;
         _metrics = metrics;
@@ -97,6 +100,7 @@ public sealed class ListeningController : IAsyncDisposable
     public string ModelsDirectory => _paths.ModelsDirectory(_settings.Current.Asr.ModelDirectory);
 
     public FasterWhisperEnvironment FasterWhisperEnvironment => _fasterWhisperEnv;
+    public LibreTranslateServer LibreTranslate => _libre;
 
     /// <summary>Backend and model the current settings resolve to on this machine.</summary>
     public (AsrBackend Backend, WhisperModel? Model, string ModelId) Resolve(AppSettings s)
@@ -211,7 +215,8 @@ public sealed class ListeningController : IAsyncDisposable
         _queue = CreateTranslationQueue(s);
         _history.Enabled = s.History.Enabled;
         _history.AsrModel = fasterWhisper ? $"faster-whisper/{modelPath}" : modelId;
-        _history.TranslationModel = _queue is null ? null : $"{s.Translation.Provider}/{s.Translation.Model}";
+        _history.TranslationModel = _queue is null ? null
+            : ProviderPresets.IsLibreTranslate(s.Translation.Provider) ? s.Translation.Provider : $"{s.Translation.Provider}/{s.Translation.Model}";
 
         var pipelineOptions = new PipelineOptions
         {
@@ -290,21 +295,28 @@ public sealed class ListeningController : IAsyncDisposable
         if (!s.Translation.Enabled) return null;
         var preset = ProviderPresets.Find(s.Translation.Provider);
         var key = _secrets.Get(DpapiSecretStore.ApiKeyName(s.Translation.Provider));
-        if (string.IsNullOrWhiteSpace(s.Translation.BaseUrl) || string.IsNullOrWhiteSpace(s.Translation.Model))
+        if (string.IsNullOrWhiteSpace(s.Translation.BaseUrl)
+            || (string.IsNullOrWhiteSpace(s.Translation.Model) && !ProviderPresets.IsLibreTranslate(s.Translation.Provider)))
         {
             Notify("Translation not configured", "Set the translation endpoint and model in Settings → Translation. Showing English only.", NoticeLevel.Warning);
             return null;
         }
         // No API key yet: translation stays off and subtitles are English only, without nagging.
         if (preset.RequiresKey && string.IsNullOrWhiteSpace(key)) return null;
-        var provider = new OpenAiCompatibleProvider(HttpFor(s.Translation.BaseUrl), new OpenAiCompatibleConfig
+        var provider = ProviderPresets.Create(HttpFor(s.Translation.BaseUrl), s.Translation, key);
+        if (ManagesLibreTranslate(s.Translation, out var url, out var languages))
         {
-            ProviderName = s.Translation.Provider,
-            BaseUrl = s.Translation.BaseUrl,
-            Model = s.Translation.Model,
-            Temperature = s.Translation.Temperature,
-            Timeout = TimeSpan.FromSeconds(s.Translation.TimeoutSeconds),
-        }, key);
+            // Lines before the server is up fall back to English (transient errors), so do not block listening on it.
+            _ = Task.Run(async () =>
+            {
+                try { await _libre.EnsureStartedAsync(url, languages, null, CancellationToken.None).ConfigureAwait(false); }
+                catch (Exception ex)
+                {
+                    _log.LogWarning(ex, "LibreTranslate did not start");
+                    Notify("LibreTranslate did not start", ex.Message, NoticeLevel.Warning);
+                }
+            });
+        }
         return new TranslationQueue(provider, _cache, new TranslationQueueOptions
         {
             MaxConcurrent = s.Translation.MaxConcurrentRequests,
@@ -318,14 +330,29 @@ public sealed class ListeningController : IAsyncDisposable
     private HttpClient HttpFor(string baseUrl) =>
         Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri) && uri.IsLoopback ? _localHttp : _http;
 
+    /// <summary>True when the provider is LibreTranslate on this PC and our private install exists, so we run the server.</summary>
+    private bool ManagesLibreTranslate(TranslationSettings t, out Uri url, out string languages)
+    {
+        languages = string.Join(',', new[] { LibreTranslateProvider.LanguageCode(t.SourceLanguage), LibreTranslateProvider.LanguageCode(t.TargetLanguage) }
+            .Select(c => c is null or "auto" ? "en" : c).Distinct());
+        return Uri.TryCreate(t.BaseUrl, UriKind.Absolute, out url!) && url.IsLoopback
+            && ProviderPresets.IsLibreTranslate(t.Provider) && _libre.IsInstalled;
+    }
+
     /// <summary>One-off request used by the "Test connection" button.</summary>
     public async Task<(bool Ok, string Message)> TestTranslationAsync(TranslationSettings t, string? apiKey)
     {
-        var provider = new OpenAiCompatibleProvider(HttpFor(t.BaseUrl), new OpenAiCompatibleConfig
+        if (ManagesLibreTranslate(t, out var url, out var languages))
         {
-            ProviderName = t.Provider, BaseUrl = t.BaseUrl, Model = t.Model, Temperature = t.Temperature,
-            Timeout = TimeSpan.FromSeconds(t.TimeoutSeconds),
-        }, apiKey);
+            try { await _libre.EnsureStartedAsync(url, languages, null, CancellationToken.None).ConfigureAwait(false); }
+            catch (Exception ex) when (ex is InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
+            {
+                return (false, ex.Message);
+            }
+        }
+        ITranslationProvider provider;
+        try { provider = ProviderPresets.Create(HttpFor(t.BaseUrl), t, apiKey); }
+        catch (UriFormatException ex) { return (false, $"Invalid endpoint: {ex.Message}"); }
         var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
@@ -393,6 +420,8 @@ public sealed class ListeningController : IAsyncDisposable
     private void OnSettingsChanged(AppSettings old, AppSettings updated)
     {
         _history.Enabled = updated.History.Enabled;
+        // Switched to another provider: free the local server's memory. It starts again on demand.
+        if (!ProviderPresets.IsLibreTranslate(updated.Translation.Provider)) _libre.Stop();
         if (State is not (ListeningState.Listening or ListeningState.Loading)) return;
         bool restart = Json(old.Audio) != Json(updated.Audio) || Json(old.Vad) != Json(updated.Vad) ||
                        Json(old.Asr) != Json(updated.Asr) || Json(old.Glossary) != Json(updated.Glossary) ||
@@ -433,7 +462,8 @@ public sealed class ListeningController : IAsyncDisposable
             _queue = CreateTranslationQueue(s);
             _pipeline.SetTranslation(_queue);
             old?.Dispose();
-            _history.TranslationModel = _queue is null ? null : $"{s.Translation.Provider}/{s.Translation.Model}";
+            _history.TranslationModel = _queue is null ? null
+                : ProviderPresets.IsLibreTranslate(s.Translation.Provider) ? s.Translation.Provider : $"{s.Translation.Provider}/{s.Translation.Model}";
         }
         finally { _gate.Release(); }
     }
@@ -464,6 +494,7 @@ public sealed class ListeningController : IAsyncDisposable
         await _history.DisposeAsync().ConfigureAwait(false);
         await _asr.DisposeAsync().ConfigureAwait(false);
         await _fasterWhisper.DisposeAsync().ConfigureAwait(false);
+        _libre.Dispose();
         _devices.Dispose();
     }
 }

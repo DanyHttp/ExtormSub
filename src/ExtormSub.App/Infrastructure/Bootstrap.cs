@@ -54,6 +54,7 @@ public static class Bootstrap
         s.AddSingleton(sp => new WhisperCppProvider(paths, sp.GetRequiredService<CudaRuntimePack>(), sp.GetRequiredService<ILogger<WhisperCppProvider>>()));
         s.AddSingleton<FasterWhisperEnvironment>();
         s.AddSingleton<FasterWhisperProvider>();
+        s.AddSingleton<ExtormSub.Infrastructure.Translation.LibreTranslateServer>();
         s.AddSingleton<AudioDeviceService>();
         s.AddSingleton<IHistoryStore>(_ => new SqliteHistoryStore(paths.HistoryDatabase));
         s.AddSingleton<HistoryRecorder>();

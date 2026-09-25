@@ -14,7 +14,7 @@
 
 - Captures **system audio** through WASAPI loopback, or a **microphone**.
 - Transcribes **locally** with whisper.cpp (built in; GPU through Vulkan, or CUDA with the optional NVIDIA pack, falling back to the CPU) or **faster-whisper** (a private Python environment set up from the app). Silero VAD detects speech.
-- Translates stable English lines into **Persian** through any OpenAI-compatible API (OpenAI, DeepSeek, Claude, Gemini, OpenRouter, Ollama…).
+- Translates stable English lines into **Persian** through any OpenAI-compatible API (OpenAI, DeepSeek, Claude, Gemini, OpenRouter, Ollama…), or for free and offline with **LibreTranslate**, installed from the app.
 - Shows the result as a **transparent, click-through subtitle overlay** above every app.
 
 ## Install
@@ -26,6 +26,7 @@ Download `ExtormSub-Setup-<version>.exe` from the [latest release](https://githu
 1. **Launch ExtormSub.** It lives in the system tray. On first launch the settings window opens on **Speech Recognition**.
 2. **Download a speech model.** Pick the suggested one (150–600 MB). It is stored in `%LOCALAPPDATA%\ExtormSub\models`.
 3. **(Optional) add a translation API key** under **Translation**. Without one, ExtormSub simply shows English subtitles; with one, any OpenAI-compatible provider works (OpenAI, DeepSeek, Claude, Gemini, OpenRouter, a local Ollama…). The key is stored DPAPI-encrypted on your PC.
+   **No API key?** Pick **LibreTranslate** as the provider and press **Install**. It needs [Python 3.9+](https://www.python.org/downloads/) (tick *Add python.exe to PATH*), downloads about 1 GB once into a private folder, and starts by itself when you listen. **Test connection** starts it right away; the first start downloads the English and Persian models. Translation is plain machine translation, lower quality than an LLM, but free and nothing leaves your PC.
 4. **Choose the audio source** under **Audio**: system audio (whatever you hear) or a microphone.
 5. **Play something and press `Ctrl+Alt+S`.** The English line appears as the speech is recognised, with the Persian translation under it, like in the screenshot above.
 6. Press `Ctrl+Alt+C` to unlock the overlay, drag or resize it where you want it, and press it again to make it click-through.
@@ -48,6 +49,7 @@ Command line: `--minimized` starts in the tray, and `--exit` closes a running in
 | Settings (JSON) | `%APPDATA%\ExtormSub\settings.json` |
 | API keys (DPAPI-encrypted) | `%APPDATA%\ExtormSub\secrets\` |
 | Models, history DB, logs | `%LOCALAPPDATA%\ExtormSub\` |
+| LibreTranslate and its language models | `%LOCALAPPDATA%\ExtormSub\libretranslate\` (Remove deletes it) |
 
 ## Build from source
 

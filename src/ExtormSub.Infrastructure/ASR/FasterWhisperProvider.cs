@@ -68,7 +68,7 @@ public sealed class FasterWhisperEnvironment(AppPaths paths, ILogger<FasterWhisp
         if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
     }
 
-    private async Task RunAsync(string exe, string[] args, IProgress<string>? progress, CancellationToken ct)
+    internal static async Task RunAsync(string exe, string[] args, IProgress<string>? progress, CancellationToken ct)
     {
         progress?.Report($"> {Path.GetFileName(exe)} {string.Join(' ', args)}");
         using var p = Start(exe, args);
@@ -105,7 +105,7 @@ public sealed class FasterWhisperEnvironment(AppPaths paths, ILogger<FasterWhisp
         }
     }
 
-    internal static Process Start(string exe, IEnumerable<string> args, bool redirectInput = false)
+    internal static Process Start(string exe, IEnumerable<string> args, bool redirectInput = false, IReadOnlyDictionary<string, string>? env = null)
     {
         var psi = new ProcessStartInfo(exe)
         {
@@ -123,6 +123,7 @@ public sealed class FasterWhisperEnvironment(AppPaths paths, ILogger<FasterWhisp
         psi.Environment["PIP_NO_INPUT"] = "1";
         psi.Environment["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1";
         psi.Environment["HF_HUB_DISABLE_TELEMETRY"] = "1";
+        foreach (var (k, v) in env ?? new Dictionary<string, string>()) psi.Environment[k] = v;
         return Process.Start(psi) ?? throw new InvalidOperationException($"Could not start {exe}");
     }
 }

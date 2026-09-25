@@ -277,3 +277,29 @@ public class ModelDownloaderTests
         public void Report(T value) => report(value);
     }
 }
+
+public class LibreTranslateServerTests
+{
+    /// <summary>Installs LibreTranslate (~1 GB) into a temp folder, starts it and translates. Set LIBRETRANSLATE_SETUP=1 to run.</summary>
+    [Fact]
+    public async Task Installs_starts_and_translates_when_enabled()
+    {
+        if (Environment.GetEnvironmentVariable("LIBRETRANSLATE_SETUP") != "1") return;
+        var root = Path.Combine(Path.GetTempPath(), "extormsub-lt-test");
+        using var server = new ExtormSub.Infrastructure.Translation.LibreTranslateServer(new AppPaths(root, root));
+        var log = new Progress<string>(Console.WriteLine);
+        if (!server.IsInstalled) await server.SetupAsync(null, log, CancellationToken.None);
+        Assert.True(server.IsInstalled);
+
+        var url = new Uri("http://127.0.0.1:5055/");
+        await server.EnsureStartedAsync(url, "en,fa", log, CancellationToken.None);
+        Assert.True(server.IsRunning);
+
+        var p = new ExtormSub.Core.Translation.LibreTranslateProvider(new HttpClient(), url.ToString(), TimeSpan.FromSeconds(60), null);
+        var result = await p.TranslateAsync(new("Good morning, my friend.", [], [], "English", "Persian"), CancellationToken.None);
+        Assert.Matches(@"\p{IsArabic}", result);
+
+        server.Stop();
+        Assert.False(server.IsRunning);
+    }
+}

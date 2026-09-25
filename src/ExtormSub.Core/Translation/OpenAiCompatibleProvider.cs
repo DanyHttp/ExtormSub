@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using ExtormSub.Core.Settings;
 
 namespace ExtormSub.Core.Translation;
 
@@ -18,8 +19,23 @@ public static class ProviderPresets
         new("Claude", "https://api.anthropic.com/v1", "claude-haiku-4-5", true),
         new("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai", "gemini-2.5-flash", true),
         new("OpenRouter", "https://openrouter.ai/api/v1", "openai/gpt-4.1-mini", true),
+        new("LibreTranslate", "http://localhost:5000", "", false),
         new("Custom", "http://localhost:11434/v1", "", false),
     ];
+
+    public static bool IsLibreTranslate(string name) => name.Equals("LibreTranslate", StringComparison.OrdinalIgnoreCase);
+
+    public static ITranslationProvider Create(HttpClient http, TranslationSettings t, string? apiKey) =>
+        IsLibreTranslate(t.Provider)
+            ? new LibreTranslateProvider(http, t.BaseUrl, TimeSpan.FromSeconds(t.TimeoutSeconds), apiKey)
+            : new OpenAiCompatibleProvider(http, new OpenAiCompatibleConfig
+            {
+                ProviderName = t.Provider,
+                BaseUrl = t.BaseUrl,
+                Model = t.Model,
+                Temperature = t.Temperature,
+                Timeout = TimeSpan.FromSeconds(t.TimeoutSeconds),
+            }, apiKey);
 
     public static ProviderPreset Find(string name) =>
         All.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) ?? All[^1];
@@ -110,7 +126,7 @@ public sealed partial class OpenAiCompatibleProvider : ITranslationProvider
         var text = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
-            throw MapError(response, text);
+            throw MapError(response, text, _endpoint.Host);
 
         string? content;
         try
@@ -127,9 +143,9 @@ public sealed partial class OpenAiCompatibleProvider : ITranslationProvider
         return SubtitlePrompt.CleanResponse(content);
     }
 
-    private TranslationException MapError(HttpResponseMessage response, string body)
+    internal static TranslationException MapError(HttpResponseMessage response, string body, string host)
     {
-        var detail = $"HTTP {(int)response.StatusCode} from {_endpoint.Host}: {Scrub(body)}";
+        var detail = $"HTTP {(int)response.StatusCode} from {host}: {Scrub(body)}";
         return response.StatusCode switch
         {
             HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => new(TranslationErrorKind.Auth, detail),

@@ -6,16 +6,43 @@
         <TextBlock Text="PROVIDER" Style="{StaticResource T.Section}" />
         <Border Style="{StaticResource Card}">
             <StackPanel Margin="0,0,0,-1">
-                <ui:SettingRow Header="Translate subtitles" Description="Stays off until you add an API key. Without one, or when the API is unreachable, English subtitles keep working.">
+                <ui:SettingRow Header="Translate subtitles" Description="Stays off until you add an API key, or pick LibreTranslate to run it free on this PC. Without one, or when the API is unreachable, English subtitles keep working.">
                     <CheckBox IsChecked="{Binding S.Translation.Enabled}" />
                 </ui:SettingRow>
                 <ui:SettingRow Header="Provider" Description="Any OpenAI-compatible endpoint. Choosing a provider fills in its endpoint and a sensible model.">
                     <ComboBox Width="240" ItemsSource="{x:Static ui:SettingsViewModel.ProviderNames}" SelectedItem="{Binding Provider}" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="Endpoint" Description="Base URL; /chat/completions is appended.">
+                <StackPanel Visibility="{Binding IsLibreTranslate, Converter={StaticResource Visible}}">
+                    <ui:SettingRow Header="LibreTranslate on this PC" Description="{Binding LibreStatus}">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Install" Style="{StaticResource Button.Primary}" Command="{Binding InstallLibre}"
+                                    Visibility="{Binding LibreInstalled, Converter={StaticResource Collapsed}}" />
+                            <Button Content="Reinstall" Command="{Binding InstallLibre}"
+                                    Visibility="{Binding LibreInstalled, Converter={StaticResource Visible}}" />
+                            <Button Content="Cancel" Margin="8,0,0,0" Command="{Binding CancelLibre}"
+                                    Visibility="{Binding IsInstallingLibre, Converter={StaticResource Visible}}" />
+                            <Button Content="Remove" Margin="8,0,0,0" Style="{StaticResource Button.Danger}" Command="{Binding RemoveLibre}"
+                                    Visibility="{Binding LibreInstalled, Converter={StaticResource Visible}}" />
+                        </StackPanel>
+                    </ui:SettingRow>
+                    <Border BorderBrush="{StaticResource B.Border}" BorderThickness="0,0,0,1" Padding="18,12">
+                        <TextBlock Text="{Binding LibreLog}" Style="{StaticResource T.Value}" FontSize="11.5" TextWrapping="Wrap"
+                                   Foreground="{StaticResource B.TextMuted}" />
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding LibreLog}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+                </StackPanel>
+                <ui:SettingRow Header="Endpoint" Description="Base URL of the translation server.">
                     <TextBox Width="320" Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="Model">
+                <ui:SettingRow Header="Model" Visibility="{Binding IsLibreTranslate, Converter={StaticResource Collapsed}}">
                     <TextBox Width="240" Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}" />
                 </ui:SettingRow>
                 <ui:SettingRow Header="API key" Description="{Binding ApiKeyHint}">
