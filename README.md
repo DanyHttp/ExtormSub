@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <video src="docs/images/showreel.mp4" controls muted width="700"></video>
+</p>
+
+<p align="center">
   <a href="https://github.com/DanyHttp/ExtormSub/releases/latest"><img src="https://img.shields.io/github/downloads/DanyHttp/ExtormSub/total?label=downloads" alt="GitHub downloads"></a>
 </p>
 
