@@ -1,0 +1,70 @@
+<UserControl x:Class="ExtormSub.App.UI.Pages.ModelsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:ExtormSub.App.UI">
+    <StackPanel>
+        <Border Style="{StaticResource Notice}" Margin="0,16,0,0" Visibility="{Binding IsFasterWhisper, Converter={StaticResource Visible}}">
+            <TextBlock Style="{StaticResource T.Caption}" Foreground="{StaticResource B.Text}"
+                       Text="These models are used by the built-in whisper.cpp engine. Switch Engine to whisper.cpp in Speech Recognition to use them." />
+        </Border>
+        <TextBlock Text="WHISPER.CPP MODELS" Style="{StaticResource T.Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel Margin="0,0,0,-1">
+                <ui:SettingRow Header="Model folder" Description="{Binding ModelDirectoryText}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Open" Command="{Binding OpenModelsFolder}" />
+                        <Button Content="Change…" Margin="8,0,0,0" Command="{Binding BrowseModelDirectory}" />
+                        <Button Content="Default" Margin="8,0,0,0" Style="{StaticResource Button.Ghost}" Command="{Binding ResetModelDirectory}" />
+                    </StackPanel>
+                </ui:SettingRow>
+                <ItemsControl ItemsSource="{Binding Models.Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{StaticResource B.Border}" BorderThickness="0,0,0,1" Padding="18,12" Background="Transparent"
+                                    ToolTip="{Binding Model.Guide}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontSize="13.5" />
+                                            <Border Style="{StaticResource Pill}" Margin="8,0,0,0" Background="{StaticResource B.AccentSoft}"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource Visible}}">
+                                                <TextBlock Text="In use" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
+                                            </Border>
+                                            <Border Style="{StaticResource Pill}" Margin="8,0,0,0" Background="{StaticResource B.AccentSoft}"
+                                                    Visibility="{Binding IsRecommended, Converter={StaticResource Visible}}">
+                                                <TextBlock Text="Recommended for this PC" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Details}" Style="{StaticResource T.Caption}" Margin="0,3,0,0" />
+                                                                                <TextBlock Text="{Binding Status}" Style="{StaticResource T.Caption}" Foreground="{StaticResource B.TextSubtle}" Margin="0,2,0,0" />
+                                        <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,8,24,0"
+                                                     Visibility="{Binding ShowProgress, Converter={StaticResource Visible}}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="{Binding DownloadLabel}" Style="{StaticResource Button.Primary}"
+                                                Visibility="{Binding CanDownload, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.Download, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Content="Cancel" Visibility="{Binding IsDownloading, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.CancelDownload, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Content="Use" Margin="8,0,0,0"
+                                                Visibility="{Binding IsDownloaded, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.UseModel, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Content="Delete" Margin="8,0,0,0" Style="{StaticResource Button.Danger}"
+                                                Visibility="{Binding IsDownloaded, Converter={StaticResource Visible}}"
+                                                Command="{Binding DataContext.DeleteModel, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+        <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
+                   Text="Not sure? Take the one marked “Recommended for this PC”. If subtitles lag behind the speech, pick a smaller model; quantized ones are smaller and faster with almost the same accuracy. Hover a model for who it suits. “Use” switches the quality preset to Custom with that model." />
+    </StackPanel>
+</UserControl>

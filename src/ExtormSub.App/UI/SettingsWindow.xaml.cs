@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using ExtormSub.App.Infrastructure;
 using ExtormSub.App.UI.Pages;
@@ -16,9 +17,10 @@ public partial class SettingsWindow : Window
 {
     private static readonly Dictionary<string, (string Subtitle, Func<FrameworkElement> Create)> PageFactory = new()
     {
-        ["General"] = ("Startup, tray and overlay behaviour.", () => new GeneralPage()),
+        ["General"] = ("Startup, tray and overlay behavior.", () => new GeneralPage()),
         ["Audio"] = ("What ExtormSub listens to: everything your PC plays, or a microphone.", () => new AudioPage()),
         ["Speech Recognition"] = ("Runs locally on this PC. Models are downloaded once and kept loaded.", () => new SpeechPage()),
+        ["Models"] = ("Download, choose and remove the speech models used by whisper.cpp.", () => new ModelsPage()),
         ["Translation"] = ("Stable English segments are translated through an OpenAI-compatible API.", () => new TranslationPage()),
         ["Subtitle Appearance"] = ("How the overlay looks on top of your videos and games.", () => new AppearancePage()),
         ["Hotkeys"] = ("System-wide shortcuts. Click a box and press the new combination.", () => new HotkeysPage()),
@@ -38,7 +40,12 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         _vm = vm;
         DataContext = vm;
-        _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); _vm.SaveNow(); };
+        _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); _vm.SaveNow(); ShowSaved(); };
+        if (vm.S.General is { SettingsWindowWidth: >= 820, SettingsWindowHeight: >= 520 } g)
+        {
+            Width = Math.Min(g.SettingsWindowWidth, SystemParameters.WorkArea.Width);
+            Height = Math.Min(g.SettingsWindowHeight, SystemParameters.WorkArea.Height);
+        }
 
         AddHandler(TextBoxBase.TextChangedEvent, new RoutedEventHandler(OnEdited));
         AddHandler(ToggleButton.CheckedEvent, new RoutedEventHandler(OnEdited));
@@ -66,6 +73,8 @@ public partial class SettingsWindow : Window
         PageSubtitle.Visibility = PageSubtitle.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         PageHost.Content = view;
         Scroller.ScrollToTop();
+        if (SystemParameters.ClientAreaAnimation && IsLoaded)
+            PageHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)));
     }
 
     private void OnEdited(object sender, RoutedEventArgs e)
@@ -75,9 +84,28 @@ public partial class SettingsWindow : Window
         _saveTimer.Start();
     }
 
+    private void ShowSaved()
+    {
+        var fade = new DoubleAnimationUsingKeyFrames();
+        fade.KeyFrames.Add(new LinearDoubleKeyFrame(1, TimeSpan.FromMilliseconds(120)));
+        fade.KeyFrames.Add(new LinearDoubleKeyFrame(1, TimeSpan.FromMilliseconds(1400)));
+        fade.KeyFrames.Add(new LinearDoubleKeyFrame(0, TimeSpan.FromMilliseconds(1900)));
+        SavedText.BeginAnimation(OpacityProperty, fade);
+    }
+
+    // Narrow window: slimmer sidebar so the page keeps its room.
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e) => SideCol.Width = new GridLength(ActualWidth < 900 ? 200 : 232);
+
     protected override void OnClosed(EventArgs e)
     {
-        if (_saveTimer.IsEnabled)
+        if (WindowState == WindowState.Normal)
+        {
+            _vm.S.General.SettingsWindowWidth = ActualWidth;
+            _vm.S.General.SettingsWindowHeight = ActualHeight;
+            _saveTimer.Stop();
+            _vm.SaveNow();
+        }
+        else if (_saveTimer.IsEnabled)
         {
             _saveTimer.Stop();
             _vm.SaveNow();

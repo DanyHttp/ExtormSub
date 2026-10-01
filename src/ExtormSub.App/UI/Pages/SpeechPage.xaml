@@ -87,6 +87,21 @@
             </StackPanel>
         </Border>
 
+        <Border Style="{StaticResource Notice}" Visibility="{Binding GpuCrashed, Converter={StaticResource Visible}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,16,0" VerticalAlignment="Center">
+                    <TextBlock Text="GPU disabled after a crash" FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource B.Warning}" />
+                    <TextBlock Style="{StaticResource T.Caption}" Margin="0,3,0,0" Foreground="{StaticResource B.Text}"
+                               Text="Starting the GPU crashed ExtormSub last time, so the CPU is used. You can try the GPU again." />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Try GPU again" Command="{Binding RetryGpu}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
         <TextBlock Text="THIS PC" Style="{StaticResource T.Section}" />
         <Border Style="{StaticResource Card}">
             <StackPanel Margin="0,0,0,-1">
@@ -96,73 +111,8 @@
                 <ui:SettingRow Header="Graphics">
                     <TextBlock Text="{Binding GpuText}" Foreground="{StaticResource B.TextMuted}" TextWrapping="Wrap" MaxWidth="360" TextAlignment="Right" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="GPU disabled after a crash" Visibility="{Binding GpuCrashed, Converter={StaticResource Visible}}"
-                               Description="Starting the GPU crashed ExtormSub last time, so the CPU is used. You can try the GPU again.">
-                    <Button Content="Try GPU again" Command="{Binding RetryGpu}" />
-                </ui:SettingRow>
             </StackPanel>
         </Border>
 
-        <StackPanel Visibility="{Binding IsFasterWhisper, Converter={StaticResource Collapsed}}">
-        <TextBlock Text="MODELS" Style="{StaticResource T.Section}" />
-        <Border Style="{StaticResource Card}">
-            <StackPanel Margin="0,0,0,-1">
-                <ui:SettingRow Header="Model folder" Description="{Binding ModelDirectoryText}">
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="Open" Command="{Binding OpenModelsFolder}" />
-                        <Button Content="Change…" Margin="8,0,0,0" Command="{Binding BrowseModelDirectory}" />
-                        <Button Content="Default" Margin="8,0,0,0" Style="{StaticResource Button.Ghost}" Command="{Binding ResetModelDirectory}" />
-                    </StackPanel>
-                </ui:SettingRow>
-                <ItemsControl ItemsSource="{Binding Models.Items}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="{StaticResource B.Border}" BorderThickness="0,0,0,1" Padding="18,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Name}" FontSize="13.5" />
-                                            <Border Style="{StaticResource Pill}" Margin="8,0,0,0" Background="{StaticResource B.AccentSoft}"
-                                                    Visibility="{Binding IsActive, Converter={StaticResource Visible}}">
-                                                <TextBlock Text="In use" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
-                                            </Border>
-                                            <Border Style="{StaticResource Pill}" Margin="8,0,0,0" Background="{StaticResource B.AccentSoft}"
-                                                    Visibility="{Binding IsRecommended, Converter={StaticResource Visible}}">
-                                                <TextBlock Text="Recommended for this PC" FontSize="11" Foreground="{StaticResource B.AccentHover}" />
-                                            </Border>
-                                        </StackPanel>
-                                        <TextBlock Text="{Binding Details}" Style="{StaticResource T.Caption}" Margin="0,3,0,0" />
-                                        <TextBlock Text="{Binding Model.Guide}" Style="{StaticResource T.Caption}" TextWrapping="Wrap" Margin="0,3,24,0" />
-                                        <TextBlock Text="{Binding Status}" Style="{StaticResource T.Caption}" Foreground="{StaticResource B.TextSubtle}" Margin="0,2,0,0" />
-                                        <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,8,24,0"
-                                                     Visibility="{Binding ShowProgress, Converter={StaticResource Visible}}" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button Content="{Binding DownloadLabel}" Style="{StaticResource Button.Primary}"
-                                                Visibility="{Binding CanDownload, Converter={StaticResource Visible}}"
-                                                Command="{Binding DataContext.Download, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                        <Button Content="Cancel" Visibility="{Binding IsDownloading, Converter={StaticResource Visible}}"
-                                                Command="{Binding DataContext.CancelDownload, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                        <Button Content="Use" Margin="8,0,0,0"
-                                                Visibility="{Binding IsDownloaded, Converter={StaticResource Visible}}"
-                                                Command="{Binding DataContext.UseModel, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                        <Button Content="Delete" Margin="8,0,0,0" Style="{StaticResource Button.Danger}"
-                                                Visibility="{Binding IsDownloaded, Converter={StaticResource Visible}}"
-                                                Command="{Binding DataContext.DeleteModel, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
-        <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
-                   Text="Not sure? Take the one marked Recommended for this PC. Bigger models hear more accurately but need a faster PC; if subtitles lag behind the speech, pick a smaller one. Quantized models are smaller and faster with almost the same accuracy. Models come from huggingface.co/ggerganov/whisper.cpp (MIT) and are checked against pinned SHA-256 hashes. Interrupted downloads resume. “Use” switches the quality preset to Custom with that model." />
-        </StackPanel>
     </StackPanel>
 </UserControl>

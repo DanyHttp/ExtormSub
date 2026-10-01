@@ -80,6 +80,9 @@ public sealed class GeneralSettings
     public bool RememberMonitor { get; set; } = true;
     public bool PauseWhenSilent { get; set; } = true;
     public bool FirstRunCompleted { get; set; }
+    /// <summary>Settings window size from last time; 0 = use the default.</summary>
+    public double SettingsWindowWidth { get; set; }
+    public double SettingsWindowHeight { get; set; }
 }
 
 public enum AudioSourceKind { SystemAudio, Microphone }

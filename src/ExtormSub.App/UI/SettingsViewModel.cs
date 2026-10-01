@@ -141,7 +141,7 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
     public DiagnosticsViewModel Diagnostics { get; }
 
     public static IReadOnlyList<string> Pages { get; } =
-        ["General", "Audio", "Speech Recognition", "Translation", "Subtitle Appearance", "Hotkeys", "History", "Diagnostics", "Advanced", "About"];
+        ["General", "Audio", "Speech Recognition", "Models", "Translation", "Subtitle Appearance", "Hotkeys", "History", "Diagnostics", "Advanced", "About"];
 
     // ─── status ───
     public string StatusText => _controller.StatusText;

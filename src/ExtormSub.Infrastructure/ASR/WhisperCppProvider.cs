@@ -61,7 +61,7 @@ public sealed class WhisperCppProvider : IASRProvider
     private void Load(AsrOptions options, CancellationToken ct)
     {
         if (!File.Exists(options.ModelPath))
-            throw new AsrInitializationException($"Model file not found: {options.ModelPath}. Download it in Settings → Speech Recognition.");
+            throw new AsrInitializationException($"Model file not found: {options.ModelPath}. Download it in Settings → Models.");
 
         Unload();
         bool gpu = options.Backend == AsrBackend.Gpu;

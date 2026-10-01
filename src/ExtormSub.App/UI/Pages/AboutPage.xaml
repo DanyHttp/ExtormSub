@@ -52,6 +52,6 @@
             </StackPanel>
         </Border>
         <TextBlock Style="{StaticResource T.Caption}" Margin="4,10,0,0"
-                   Text="Design informed by Handy, ARIA, LiveCaptioner, VoxScribe, realtime-captions-system-audio and universal-translator. No code from GPL projects is included." />
+                   Text="Speech models come from huggingface.co/ggerganov/whisper.cpp (MIT) and are checked against pinned SHA-256 hashes; interrupted downloads resume. Design informed by Handy, ARIA, LiveCaptioner, VoxScribe, realtime-captions-system-audio and universal-translator. No code from GPL projects is included." />
     </StackPanel>
 </UserControl>

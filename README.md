@@ -31,7 +31,7 @@ Download `ExtormSub-Setup-<version>.exe` from the [latest release](https://githu
 
 ## How to use
 
-1. **Launch ExtormSub.** It lives in the system tray. On first launch the settings window opens on **Speech Recognition**.
+1. **Launch ExtormSub.** It lives in the system tray. On first launch the settings window opens on **Models**, where you download a speech model.
 2. **Download a speech model.** Pick the suggested one (150–600 MB). It is stored in `%LOCALAPPDATA%\ExtormSub\models`.
 3. **(Optional) add a translation API key** under **Translation**. Without one, ExtormSub simply shows English subtitles; with one, any OpenAI-compatible provider works (OpenAI, DeepSeek, Claude, Gemini, OpenRouter, a local Ollama…). The key is stored DPAPI-encrypted on your PC.
    **No API key?** Pick **LibreTranslate** as the provider and press **Install**. It needs [Python 3.9+](https://www.python.org/downloads/) (tick *Add python.exe to PATH*), downloads about 1 GB once into a private folder, and starts by itself when you listen. **Test connection** starts it right away; the first start downloads the English and Persian models. Translation is plain machine translation, lower quality than an LLM, but free and nothing leaves your PC.

@@ -7,6 +7,7 @@ namespace ExtormSub.App.UI.Pages;
 public partial class GeneralPage : UserControl { public GeneralPage() => InitializeComponent(); }
 public partial class AudioPage : UserControl { public AudioPage() => InitializeComponent(); }
 public partial class SpeechPage : UserControl { public SpeechPage() => InitializeComponent(); }
+public partial class ModelsPage : UserControl { public ModelsPage() => InitializeComponent(); }
 public partial class AppearancePage : UserControl { public AppearancePage() => InitializeComponent(); }
 public partial class HotkeysPage : UserControl { public HotkeysPage() => InitializeComponent(); }
 public partial class HistoryPage : UserControl { public HistoryPage() => InitializeComponent(); }

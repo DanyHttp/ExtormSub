@@ -170,7 +170,7 @@ public sealed class ListeningController : IAsyncDisposable
             {
                 SetState(ListeningState.Error, "Model not downloaded");
                 SetupNeeded?.Invoke();
-                Notify("Speech model needed", $"Download “{model?.DisplayName ?? modelId}” in Settings → Speech Recognition to start.", NoticeLevel.Warning);
+                Notify("Speech model needed", $"Download “{model?.DisplayName ?? modelId}” in Settings → Models to start.", NoticeLevel.Warning);
                 return;
             }
         }

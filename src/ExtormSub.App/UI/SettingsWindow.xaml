@@ -2,14 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ExtormSub.App.UI"
-        Title="ExtormSub Settings" Width="980" Height="700" MinWidth="820" MinHeight="520"
+        Title="ExtormSub Settings" Width="980" Height="700" MinWidth="820" MinHeight="520" SizeChanged="Window_SizeChanged"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource B.Window}" Foreground="{StaticResource B.Text}"
         FontFamily="{StaticResource F.Ui}" FontSize="13"
         TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="232" />
+            <ColumnDefinition x:Name="SideCol" Width="232" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -45,7 +45,11 @@
         <!-- Page -->
         <ScrollViewer x:Name="Scroller" Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="40,30,40,40" MaxWidth="760" HorizontalAlignment="Stretch">
-                <TextBlock x:Name="PageTitle" Style="{StaticResource T.PageTitle}" />
+                <Grid>
+                    <TextBlock x:Name="PageTitle" Style="{StaticResource T.PageTitle}" />
+                    <TextBlock x:Name="SavedText" Text="✓ Saved" Opacity="0" FontSize="12.5" Foreground="{StaticResource B.Success}"
+                               HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite" />
+                </Grid>
                 <TextBlock x:Name="PageSubtitle" Style="{StaticResource T.PageSubtitle}" />
                 <ContentControl x:Name="PageHost" Margin="0,6,0,0" Focusable="False" />
             </StackPanel>

@@ -113,7 +113,7 @@ public partial class App : Application
 
         _controller.StateChanged += () => Dispatcher.BeginInvoke(UpdateTray);
         _controller.Notification += n => Dispatcher.BeginInvoke(() => _tray.Notify(n));
-        _controller.SetupNeeded += () => Dispatcher.BeginInvoke(() => _shell.ShowSettings("Speech Recognition"));
+        _controller.SetupNeeded += () => Dispatcher.BeginInvoke(() => _shell.ShowSettings(settings.Current.Asr.Engine == AsrEngines.FasterWhisper ? "Speech Recognition" : "Models"));
         models.Notification += n => _tray.Notify(n);
         var updates = sp.GetRequiredService<UpdateController>();
         updates.Notification += n => _tray.Notify(n);
@@ -144,7 +144,7 @@ public partial class App : Application
             : _controller.Resolve(current).Model is { } m && !ModelDownloader.IsDownloaded(_controller.ModelsDirectory, m);
         bool launchedMinimized = args.Contains(StartupRegistration.MinimizedArg);
 
-        if (firstRun || modelMissing) _shell.ShowSettings(modelMissing ? "Speech Recognition" : "General");
+        if (firstRun || modelMissing) _shell.ShowSettings(modelMissing ? (current.Asr.Engine == AsrEngines.FasterWhisper ? "Speech Recognition" : "Models") : "General");
         else if (!current.General.StartMinimized && !launchedMinimized) _shell.ShowSettings();
         if (firstRun) _tray.Notify(new Notice("ExtormSub is in your tray", "Press Ctrl+Alt+S to start subtitles. Right-click the tray icon for options.", NoticeLevel.Info));
 

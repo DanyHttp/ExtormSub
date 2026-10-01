@@ -44,7 +44,7 @@
                 <ui:SettingRow Header="Weight">
                     <ComboBox Width="160" ItemsSource="{x:Static ui:SettingsViewModel.Weights}" SelectedItem="{Binding S.Overlay.FontWeight}" ItemTemplate="{StaticResource EnumItem}" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="Colour">
+                <ui:SettingRow Header="Color">
                     <ui:ColorBox Text="{Binding S.Overlay.TranslationColor, UpdateSourceTrigger=PropertyChanged}" />
                 </ui:SettingRow>
             </StackPanel>
@@ -59,7 +59,7 @@
                 <ui:SettingRow Header="Size">
                     <ui:ValueSlider Minimum="10" Maximum="60" TickFrequency="1" Value="{Binding S.Overlay.OriginalFontSize}" Format="{}{0:0} px" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="Colour">
+                <ui:SettingRow Header="Color">
                     <ui:ColorBox Text="{Binding S.Overlay.OriginalColor, UpdateSourceTrigger=PropertyChanged}" />
                 </ui:SettingRow>
             </StackPanel>
@@ -71,7 +71,7 @@
                 <ui:SettingRow Header="Text opacity">
                     <ui:ValueSlider Minimum="0.1" Maximum="1" TickFrequency="0.05" Value="{Binding S.Overlay.TextOpacity}" Format="{}{0:P0}" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="Background colour">
+                <ui:SettingRow Header="Background color">
                     <ui:ColorBox Text="{Binding S.Overlay.BackgroundColor, UpdateSourceTrigger=PropertyChanged}" />
                 </ui:SettingRow>
                 <ui:SettingRow Header="Background opacity" Description="0 % shows text only.">
@@ -80,7 +80,7 @@
                 <ui:SettingRow Header="Outline" Description="Keeps text readable on bright scenes.">
                     <CheckBox IsChecked="{Binding S.Overlay.Outline}" />
                 </ui:SettingRow>
-                <ui:SettingRow Header="Outline colour">
+                <ui:SettingRow Header="Outline color">
                     <ui:ColorBox Text="{Binding S.Overlay.OutlineColor, UpdateSourceTrigger=PropertyChanged}" />
                 </ui:SettingRow>
                 <ui:SettingRow Header="Outline thickness">

@@ -18,7 +18,7 @@
             </StackPanel>
         </Border>
 
-        <TextBlock Text="BEHAVIOUR" Style="{StaticResource T.Section}" />
+        <TextBlock Text="BEHAVIOR" Style="{StaticResource T.Section}" />
         <Border Style="{StaticResource Card}">
             <StackPanel Margin="0,0,0,-1">
                 <ui:SettingRow Header="Minimize to tray" Description="Minimizing this window hides it to the tray. Closing it never quits ExtormSub.">

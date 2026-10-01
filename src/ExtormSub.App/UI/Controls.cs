@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using ExtormSub.App.Hotkeys;
@@ -17,10 +18,58 @@ public sealed class SettingRow : ContentControl
     public static readonly DependencyProperty DescriptionProperty =
         DependencyProperty.Register(nameof(Description), typeof(string), typeof(SettingRow));
 
+    public static readonly DependencyProperty StackedProperty =
+        DependencyProperty.Register(nameof(Stacked), typeof(bool), typeof(SettingRow));
+
     static SettingRow() => DefaultStyleKeyProperty.OverrideMetadata(typeof(SettingRow), new FrameworkPropertyMetadata(typeof(SettingRow)));
 
     public string? Header { get => (string?)GetValue(HeaderProperty); set => SetValue(HeaderProperty, value); }
     public string? Description { get => (string?)GetValue(DescriptionProperty); set => SetValue(DescriptionProperty, value); }
+
+    /// <summary>True when the control no longer fits beside the text and sits underneath it.</summary>
+    public bool Stacked { get => (bool)GetValue(StackedProperty); private set => SetValue(StackedProperty, value); }
+
+    protected override void OnContentChanged(object oldContent, object newContent)
+    {
+        base.OnContentChanged(oldContent, newContent);
+        // Screen readers announce the control by the row's title instead of nothing.
+        if (newContent is CheckBox or Selector or RangeBase or TextBoxBase or PasswordBox)
+        {
+            var d = (DependencyObject)newContent;
+            if (string.IsNullOrEmpty(System.Windows.Automation.AutomationProperties.GetName(d)))
+                System.Windows.Automation.AutomationProperties.SetName(d, Header ?? "");
+            if (Description is { Length: > 0 } help)
+                System.Windows.Automation.AutomationProperties.SetHelpText(d, help);
+        }
+    }
+
+    protected override void OnRenderSizeChanged(SizeChangedInfo info)
+    {
+        base.OnRenderSizeChanged(info);
+        if (Content is UIElement c)
+        {
+            // 36 = row padding, 24 = gap; keep at least 240px for the text.
+            Stacked = ActualWidth - 36 - 24 - c.DesiredSize.Width < 240;
+        }
+    }
+
+    // A whole row toggles its switch, not just the small track.
+    protected override void OnMouseLeftButtonUp(System.Windows.Input.MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonUp(e);
+        if (e.Handled || Content is not CheckBox { IsEnabled: true } cb) return;
+        if (e.OriginalSource is DependencyObject src && IsInside(src, cb)) return;
+        cb.IsChecked = cb.IsChecked != true;
+        e.Handled = true;
+    }
+
+    private static bool IsInside(DependencyObject node, DependencyObject ancestor)
+    {
+        for (DependencyObject? n = node; n is not null; n = n is System.Windows.Media.Visual or System.Windows.Media.Media3D.Visual3D
+                 ? System.Windows.Media.VisualTreeHelper.GetParent(n) : LogicalTreeHelper.GetParent(n))
+            if (n == ancestor) return true;
+        return false;
+    }
 }
 
 /// <summary>Slider with an inline value readout (see Theme.xaml). <see cref="Format"/> is a composite format string.</summary>
