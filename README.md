@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <video src="docs/images/showreel.mp4" controls muted width="700"></video>
+  <a href="docs/images/showreel.mp4"><img src="docs/images/showreel.gif" alt="ExtormSub showreel (click for the full video)" width="700"></a>
 </p>
 
 <p align="center">
